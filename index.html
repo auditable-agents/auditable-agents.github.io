@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Auditable Agents Ecosystem — an accountability layer for AI agents</title>
+<meta name="description" content="An open-source ecosystem for AI agent accountability: detect risks before deployment, enforce policy at execution, and recover by replay and rollback after a commit.">
+<style>
+:root{
+  --ink:#12161c; --ink-2:#39424f; --ink-3:#6b7686;
+  --paper:#f7f5f1; --card:#ffffff; --rule:#ddd8ce;
+  --seal:#1d5c4f;        /* verification green */
+  --seal-soft:#e6f0ec;
+  --flag:#a8471f;        /* finding / risk */
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Charter,Georgia,serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --ink:#e8e4dc; --ink-2:#b3bac5; --ink-3:#828d9c;
+    --paper:#101318; --card:#171c23; --rule:#2b323c;
+    --seal:#6fc3ac; --seal-soft:#16302a; --flag:#e08a63;
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#e8e4dc; --ink-2:#b3bac5; --ink-3:#828d9c;
+  --paper:#101318; --card:#171c23; --rule:#2b323c;
+  --seal:#6fc3ac; --seal-soft:#16302a; --flag:#e08a63;
+}
+:root[data-theme="light"]{
+  --ink:#12161c; --ink-2:#39424f; --ink-3:#6b7686;
+  --paper:#f7f5f1; --card:#ffffff; --rule:#ddd8ce;
+  --seal:#1d5c4f; --seal-soft:#e6f0ec; --flag:#a8471f;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+  font-size:16px;line-height:1.62;-webkit-font-smoothing:antialiased}
+.wrap{max-width:960px;margin:0 auto;padding:0 24px}
+a{color:inherit}
+h1,h2,h3{line-height:1.2;text-wrap:balance;margin:0}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ink-3)}
+
+/* header */
+header{border-bottom:1px solid var(--rule);padding:56px 0 40px;margin-bottom:8px}
+.mark{display:flex;align-items:center;gap:12px;margin-bottom:28px}
+.mark svg{flex:none}
+.mark span{font-family:var(--mono);font-size:13px;letter-spacing:.1em;text-transform:uppercase}
+h1{font-family:var(--serif);font-size:clamp(30px,5.2vw,48px);font-weight:600;letter-spacing:-.015em}
+.lede{font-size:clamp(17px,2.2vw,20px);color:var(--ink-2);max-width:62ch;margin:20px 0 0}
+.lede b{color:var(--ink);font-weight:600}
+
+/* lifecycle */
+.phase-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1px;
+  background:var(--rule);border:1px solid var(--rule);border-radius:10px;overflow:hidden;margin:8px 0 0}
+.phase{background:var(--card);padding:22px 20px}
+.phase .when{font-family:var(--mono);font-size:11px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--seal)}
+.phase h3{font-size:17px;margin:10px 0 6px;font-weight:650}
+.phase p{margin:0;font-size:14.5px;color:var(--ink-2)}
+.phase code{font-family:var(--mono);font-size:13px;color:var(--ink)}
+
+section{padding:52px 0;border-bottom:1px solid var(--rule)}
+section h2{font-family:var(--serif);font-size:clamp(22px,3.2vw,29px);font-weight:600;
+  margin:10px 0 14px;letter-spacing:-.01em}
+section > p{color:var(--ink-2);max-width:68ch}
+
+/* components */
+.tbl-scroll{overflow-x:auto;margin-top:24px}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:14.5px}
+th,td{text-align:left;padding:13px 14px;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-3);font-weight:500;white-space:nowrap}
+td.num{text-align:right;font-variant-numeric:tabular-nums;font-family:var(--mono);white-space:nowrap}
+td a{font-weight:600;text-decoration:none;border-bottom:1.5px solid var(--seal)}
+td a:hover{background:var(--seal-soft)}
+.role{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--seal);white-space:nowrap}
+.lic{font-family:var(--mono);font-size:12px;color:var(--ink-3);white-space:nowrap}
+caption{caption-side:bottom;text-align:left;padding-top:14px;font-size:13px;color:var(--ink-3)}
+
+/* quotes */
+.cites{display:grid;gap:16px;margin-top:24px}
+.cite{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--seal);
+  border-radius:0 8px 8px 0;padding:18px 20px}
+.cite blockquote{margin:0 0 10px;font-family:var(--serif);font-size:16.5px;color:var(--ink)}
+.cite .src{font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.cite .src a{color:var(--seal)}
+
+/* honest state */
+.state{background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:22px 24px;margin-top:24px}
+.state h3{font-size:16px;margin:0 0 10px;font-weight:650}
+.state ul{margin:0;padding-left:20px;color:var(--ink-2);font-size:15px}
+.state li{margin:7px 0}
+.state li b{color:var(--ink)}
+
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:26px;margin-top:22px}
+.cols h3{font-size:16px;font-weight:650;margin-bottom:8px}
+.cols p{margin:0;font-size:15px;color:var(--ink-2)}
+.cols a{color:var(--seal)}
+
+footer{padding:36px 0 60px;font-size:13.5px;color:var(--ink-3)}
+footer a{color:var(--ink-2)}
+footer p{margin:6px 0}
+.pill{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--seal);background:var(--seal-soft);
+  padding:3px 9px;border-radius:20px}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<header>
+  <div class="mark">
+    <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
+      <circle cx="13" cy="13" r="11.5" fill="none" stroke="currentColor" stroke-width="1.4" opacity=".45"/>
+      <path d="M7.5 13.2l3.6 3.6 7.4-7.6" fill="none" stroke="currentColor"
+            stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span>Auditable&nbsp;Agents</span>
+  </div>
+
+  <h1>An accountability layer for agents that act</h1>
+  <p class="lede">When an agent takes a consequential action and the outcome is wrong, three
+  questions usually have no good answer: <b>what did it rely on</b>, <b>could that have been
+  checked first</b>, and <b>can the action be undone</b>. This is an open-source ecosystem for
+  answering all three.</p>
+
+  <div class="phase-grid">
+    <div class="phase">
+      <div class="when">Before deployment</div>
+      <h3>Detect</h3>
+      <p>Scan agent code and configurations for risks that would only surface at run time.
+      <code>agent-audit</code></p>
+    </div>
+    <div class="phase">
+      <div class="when">At execution</div>
+      <h3>Enforce</h3>
+      <p>Gate a tool call before it commits, and write a tamper-evident record of the decision.
+      <code>Aegis</code></p>
+    </div>
+    <div class="phase">
+      <div class="when">After the commit</div>
+      <h3>Recover</h3>
+      <p>Replay a decision against current state and roll the action back when its basis no
+      longer holds. <code>auditable</code></p>
+    </div>
+  </div>
+</header>
+
+<section id="components">
+  <div class="eyebrow">01 / Components</div>
+  <h2>One layer, four tools, one framework</h2>
+  <p>Each tool is useful on its own. Together they cover an agent action end to end, which is
+  why they are maintained as one ecosystem rather than four unrelated repositories.</p>
+
+  <div class="tbl-scroll">
+  <table>
+    <caption>Star and fork counts recorded 2 August 2026. Every component is public and
+    independently installable.</caption>
+    <thead>
+      <tr><th>Component</th><th>Role</th><th class="num">Stars</th><th class="num">Forks</th>
+      <th>What it does</th><th>License</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a href="https://arxiv.org/abs/2604.05485">Auditable Agents</a></td>
+        <td class="role">Framework</td>
+        <td class="num">&mdash;</td><td class="num">&mdash;</td>
+        <td>Defines five auditability dimensions, the detect / enforce / recover model, and the
+        Auditability Card, a disclosure format for stating which guarantees a system offers.</td>
+        <td class="lic">paper</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/HeadyZhang/agent-audit">agent-audit</a></td>
+        <td class="role">Detect</td>
+        <td class="num">206</td><td class="num">24</td>
+        <td>Static scanner for agent code and Model Context Protocol configurations. 51 rules
+        mapped to the OWASP Agentic Top 10, with taint analysis. Works with LangChain, CrewAI,
+        and AutoGen.</td>
+        <td class="lic">MIT</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/Justin0504/Aegis">Aegis</a></td>
+        <td class="role">Enforce</td>
+        <td class="num">370</td><td class="num">39</td>
+        <td>Runtime policy enforcement with human-in-the-loop approval and a kill switch. Writes
+        Ed25519-signed, hash-chained records of each decision. No changes to agent code.</td>
+        <td class="lic">MIT</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/yzhao062/auditable">auditable</a></td>
+        <td class="role">Recover</td>
+        <td class="num">18</td><td class="num">1</td>
+        <td>Captures what a decision relied on, replays it against live state, and reverses a
+        committed action when the basis fails. One typed graph across past, present, and future.</td>
+        <td class="lic">Apache-2.0</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/yzhao062/awesome-auditable-ai">awesome-auditable-ai</a></td>
+        <td class="role">Map</td>
+        <td class="num">17</td><td class="num">7</td>
+        <td>Curated index of papers, tools, datasets, benchmarks, and standards for building and
+        auditing reliable agents.</td>
+        <td class="lic">CC0-1.0</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section id="uptake">
+  <div class="eyebrow">02 / Independent uptake</div>
+  <h2>Other groups have started to build on this</h2>
+  <p>Independent laboratories now cite this work as the reference point for their own systems.
+  These are early and specific signals rather than evidence of broad adoption, and they are
+  listed here so anyone can check them.</p>
+
+  <div class="cites">
+    <div class="cite">
+      <blockquote>&ldquo;Auditable Agents frames recoverability, policy checkability, responsibility
+      attribution, and evidence integrity as system properties &hellip; Agent Audit analyzes code
+      and deployment artifacts before execution.&rdquo;</blockquote>
+      <div class="src">Georgia Institute of Technology and University of Illinois Urbana-Champaign,
+      <a href="https://arxiv.org/abs/2607.25364">arXiv:2607.25364</a></div>
+    </div>
+    <div class="cite">
+      <blockquote>&ldquo;Our contribution is therefore not the enforcement mechanism, which
+      pre-execution systems such as AEGIS &hellip; already establish.&rdquo;</blockquote>
+      <div class="src">Reason Less, Verify More,
+      <a href="https://arxiv.org/abs/2607.07405">arXiv:2607.07405</a></div>
+    </div>
+    <div class="cite">
+      <blockquote>&ldquo;Agent Audit &hellip; inspect policies, applications, skills, or runtime
+      evidence to produce audit or compliance artifacts.&rdquo;</blockquote>
+      <div class="src">Agentic Services Computing, a survey,
+      <a href="https://arxiv.org/abs/2509.24380">arXiv:2509.24380</a></div>
+    </div>
+  </div>
+</section>
+
+<section id="governance">
+  <div class="eyebrow">03 / Governance</div>
+  <h2>Where this ecosystem actually stands</h2>
+  <p>Publishing an accurate account of the current state matters more than a polished one,
+  particularly for tooling whose job is to make other systems inspectable.</p>
+
+  <div class="state">
+    <h3>Today</h3>
+    <ul>
+      <li>Each repository is effectively maintained by <b>one developer</b>. No component yet has
+      a second regular committer.</li>
+      <li>The components sit under <b>four different licenses</b> and were developed in separate
+      personal accounts.</li>
+      <li>There is <b>no shared release process</b>, no cross-component interface contract, and no
+      published governance model.</li>
+      <li>A tool that audits other systems should carry <b>the strongest integrity guarantees</b>
+      of anything it inspects. That standard is not met yet.</li>
+    </ul>
+  </div>
+
+  <div class="state" style="margin-top:16px">
+    <h3>What this organization is for</h3>
+    <ul>
+      <li>Hold the components under <b>one umbrella</b> so the ecosystem has an identity that does
+      not depend on any individual maintainer's personal or commercial pages.</li>
+      <li>Publish a <b>component manifest</b> and at least one working cross-component interface,
+      so a finding, a policy decision, and a recovery record can refer to the same action.</li>
+      <li>Publish a <b>governance model</b> covering maintainer appointment, succession, release
+      authority, and conflict handling, plus a <b>security policy</b> with coordinated disclosure.</li>
+      <li>Grow a <b>contributor base</b> beyond a single maintainer per repository, which is the
+      main thing standing between this and a sustainable ecosystem.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="contributing">
+  <div class="eyebrow">04 / Taking part</div>
+  <h2>Contributing and reporting</h2>
+  <div class="cols">
+    <div>
+      <h3>Contribute</h3>
+      <p>Each repository takes issues and pull requests directly. Good starting points are new
+      detection rules for <a href="https://github.com/HeadyZhang/agent-audit">agent-audit</a>,
+      policy examples for <a href="https://github.com/Justin0504/Aegis">Aegis</a>, and additions to
+      <a href="https://github.com/yzhao062/awesome-auditable-ai">awesome-auditable-ai</a>.</p>
+    </div>
+    <div>
+      <h3>Report a vulnerability</h3>
+      <p>Please do not open a public issue for a security problem. Report it privately through the
+      relevant repository's GitHub security advisory page, and expect an acknowledgement while a
+      fix and coordinated disclosure are arranged.</p>
+    </div>
+    <div>
+      <h3>Publish an Auditability Card</h3>
+      <p>The Auditability Card is a disclosure format for stating which accountability guarantees a
+      system provides. The format is described in
+      <a href="https://arxiv.org/abs/2604.05485">the framework paper</a>. If you publish one for
+      your own system, open an issue so it can be listed.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p><span class="pill">Open source</span></p>
+  <p>An independent open-source ecosystem for AI agent accountability. Maintained by its
+  contributors; not affiliated with, and not speaking for, any company.</p>
+  <p>Components are released under their individual licenses as listed above.
+  Source for this page: <a href="https://github.com/auditable-agents/auditable-agents.github.io">auditable-agents.github.io</a>.</p>
+</footer>
+
+</div>
+</body>
+</html>
