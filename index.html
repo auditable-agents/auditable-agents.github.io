@@ -1,316 +1,749 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Auditable Agents Ecosystem — an accountability layer for AI agents</title>
-<meta name="description" content="An open-source ecosystem for AI agent accountability: detect risks before deployment, enforce policy at execution, and recover by replay and rollback after a commit.">
+<title>The Auditable Agents Ecosystem: Accountability for AI Agents</title>
+<meta name="description" content="An open-source ecosystem for agent accountability: detect risks before deployment, enforce policy at execution, and recover by replay and rollback after a commit. One shared framework, four tools.">
+<link rel="canonical" href="https://auditable-agents.github.io/">
+<meta name="theme-color" content="#1d5c4f">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="The Auditable Agents Ecosystem">
+<meta property="og:url" content="https://auditable-agents.github.io/">
+<meta property="og:title" content="The Auditable Agents Ecosystem: Accountability for AI Agents">
+<meta property="og:description" content="Detect risks before deployment, enforce policy at execution, recover after a commit. An open-source accountability layer for agents that act.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The Auditable Agents Ecosystem">
+<meta name="twitter:description" content="An open-source accountability layer for agents that act: detect, enforce, recover.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Ccircle%20cx='16'%20cy='16'%20r='13'%20fill='none'%20stroke='%231d5c4f'%20stroke-width='2.4'/%3E%3Cpath%20d='M9.5%2016.4l4.4%204.4%209-9.2'%20fill='none'%20stroke='%23c98a2e'%20stroke-width='3'%20stroke-linecap='round'%20stroke-linejoin='round'/%3E%3C/svg%3E">
 <style>
-:root{
-  --ink:#12161c; --ink-2:#39424f; --ink-3:#6b7686;
-  --paper:#f7f5f1; --card:#ffffff; --rule:#ddd8ce;
-  --seal:#1d5c4f;        /* verification green */
-  --seal-soft:#e6f0ec;
-  --flag:#a8471f;        /* finding / risk */
-  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
-  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
-  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Charter,Georgia,serif;
-}
-@media (prefers-color-scheme:dark){
-  :root{
-    --ink:#e8e4dc; --ink-2:#b3bac5; --ink-3:#828d9c;
-    --paper:#101318; --card:#171c23; --rule:#2b323c;
-    --seal:#6fc3ac; --seal-soft:#16302a; --flag:#e08a63;
+  *, *::before, *::after { box-sizing: border-box; }
+
+  :root {
+    /* light — cool paper ground; seal green = verified, amber = finding, slate = time/rollback */
+    --bg: #f6f7f5;
+    --surface: #ffffff;
+    --surface-2: #eef1ee;
+    --ink: #14191c;
+    --ink-soft: #454f55;
+    --muted: #79848c;
+    --line: #dfe3df;
+    --line-soft: #eceeeb;
+    --seal: #1d5c4f;         /* enforce / verified */
+    --seal-ink: #17493f;
+    --seal-wash: #e3efea;
+    --flag: #b0691a;         /* detect / finding */
+    --flag-ink: #8d5314;
+    --time: #3a5f8a;         /* recover / rollback */
+    --time-ink: #2f4e72;
+    --shadow: 0 1px 2px rgba(20,40,35,.05), 0 12px 30px rgba(20,50,40,.07);
+
+    --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", SFMono-Regular, "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace;
+    --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Charter, Georgia, serif;
+
+    --step-cap: .78rem;
+    --step-sm: .92rem;
+    --step-0: 1rem;
+    --step-1: 1.2rem;
+    --step-2: 1.6rem;
+    --step-3: 2.1rem;
+    --step-hero: clamp(2.4rem, 5.6vw, 3.8rem);
   }
-}
-:root[data-theme="dark"]{
-  --ink:#e8e4dc; --ink-2:#b3bac5; --ink-3:#828d9c;
-  --paper:#101318; --card:#171c23; --rule:#2b323c;
-  --seal:#6fc3ac; --seal-soft:#16302a; --flag:#e08a63;
-}
-:root[data-theme="light"]{
-  --ink:#12161c; --ink-2:#39424f; --ink-3:#6b7686;
-  --paper:#f7f5f1; --card:#ffffff; --rule:#ddd8ce;
-  --seal:#1d5c4f; --seal-soft:#e6f0ec; --flag:#a8471f;
-}
-*{box-sizing:border-box}
-body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
-  font-size:16px;line-height:1.62;-webkit-font-smoothing:antialiased}
-.wrap{max-width:960px;margin:0 auto;padding:0 24px}
-a{color:inherit}
-h1,h2,h3{line-height:1.2;text-wrap:balance;margin:0}
-.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;
-  text-transform:uppercase;color:var(--ink-3)}
 
-/* header */
-header{border-bottom:1px solid var(--rule);padding:56px 0 40px;margin-bottom:8px}
-.mark{display:flex;align-items:center;gap:12px;margin-bottom:28px}
-.mark svg{flex:none}
-.mark span{font-family:var(--mono);font-size:13px;letter-spacing:.1em;text-transform:uppercase}
-h1{font-family:var(--serif);font-size:clamp(30px,5.2vw,48px);font-weight:600;letter-spacing:-.015em}
-.lede{font-size:clamp(17px,2.2vw,20px);color:var(--ink-2);max-width:62ch;margin:20px 0 0}
-.lede b{color:var(--ink);font-weight:600}
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1316; --surface: #171d21; --surface-2: #141a1d;
+      --ink: #e8ece9; --ink-soft: #b4bfc4; --muted: #87949c;
+      --line: #2a3238; --line-soft: #202830;
+      --seal: #62bda6; --seal-ink: #7ccdb7; --seal-wash: #14302a;
+      --flag: #d99a4e; --flag-ink: #e5ab63;
+      --time: #7ba3d0; --time-ink: #93b6de;
+      --shadow: 0 1px 2px rgba(0,0,0,.35), 0 16px 36px rgba(0,0,0,.42);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1316; --surface: #171d21; --surface-2: #141a1d;
+    --ink: #e8ece9; --ink-soft: #b4bfc4; --muted: #87949c;
+    --line: #2a3238; --line-soft: #202830;
+    --seal: #62bda6; --seal-ink: #7ccdb7; --seal-wash: #14302a;
+    --flag: #d99a4e; --flag-ink: #e5ab63;
+    --time: #7ba3d0; --time-ink: #93b6de;
+    --shadow: 0 1px 2px rgba(0,0,0,.35), 0 16px 36px rgba(0,0,0,.42);
+  }
+  :root[data-theme="light"] {
+    --bg: #f6f7f5; --surface: #ffffff; --surface-2: #eef1ee;
+    --ink: #14191c; --ink-soft: #454f55; --muted: #79848c;
+    --line: #dfe3df; --line-soft: #eceeeb;
+    --seal: #1d5c4f; --seal-ink: #17493f; --seal-wash: #e3efea;
+    --flag: #b0691a; --flag-ink: #8d5314;
+    --time: #3a5f8a; --time-ink: #2f4e72;
+    --shadow: 0 1px 2px rgba(20,40,35,.05), 0 12px 30px rgba(20,50,40,.07);
+  }
 
-/* lifecycle */
-.phase-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1px;
-  background:var(--rule);border:1px solid var(--rule);border-radius:10px;overflow:hidden;margin:8px 0 0}
-.phase{background:var(--card);padding:22px 20px}
-.phase .when{font-family:var(--mono);font-size:11px;letter-spacing:.12em;
-  text-transform:uppercase;color:var(--seal)}
-.phase h3{font-size:17px;margin:10px 0 6px;font-weight:650}
-.phase p{margin:0;font-size:14.5px;color:var(--ink-2)}
-.phase code{font-family:var(--mono);font-size:13px;color:var(--ink)}
+  html { font-size: 106%; scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 
-section{padding:52px 0;border-bottom:1px solid var(--rule)}
-section h2{font-family:var(--serif);font-size:clamp(22px,3.2vw,29px);font-weight:600;
-  margin:10px 0 14px;letter-spacing:-.01em}
-section > p{color:var(--ink-2);max-width:68ch}
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: var(--font-sans); font-size: var(--step-0); line-height: 1.62;
+    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  }
+  .wrap { width: min(100% - 2.6rem, 1100px); margin-inline: auto; }
+  a { color: inherit; }
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid var(--seal); outline-offset: 3px; border-radius: 3px;
+  }
+  .skip {
+    position: absolute; left: -999px; top: 0; background: var(--surface); color: var(--ink);
+    padding: .6rem 1rem; z-index: 20; border: 1px solid var(--line);
+  }
+  .skip:focus { left: .8rem; top: .8rem; }
 
-/* components */
-.tbl-scroll{overflow-x:auto;margin-top:24px}
-table{border-collapse:collapse;width:100%;min-width:640px;font-size:14.5px}
-th,td{text-align:left;padding:13px 14px;border-bottom:1px solid var(--rule);vertical-align:top}
-th{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--ink-3);font-weight:500;white-space:nowrap}
-td.num{text-align:right;font-variant-numeric:tabular-nums;font-family:var(--mono);white-space:nowrap}
-td a{font-weight:600;text-decoration:none;border-bottom:1.5px solid var(--seal)}
-td a:hover{background:var(--seal-soft)}
-.role{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
-  color:var(--seal);white-space:nowrap}
-.lic{font-family:var(--mono);font-size:12px;color:var(--ink-3);white-space:nowrap}
-caption{caption-side:bottom;text-align:left;padding-top:14px;font-size:13px;color:var(--ink-3)}
+  .eyebrow {
+    font-family: var(--font-mono); font-size: var(--step-cap); letter-spacing: .15em;
+    text-transform: uppercase; color: var(--muted); margin: 0 0 .5rem;
+  }
 
-/* quotes */
-.cites{display:grid;gap:16px;margin-top:24px}
-.cite{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--seal);
-  border-radius:0 8px 8px 0;padding:18px 20px}
-.cite blockquote{margin:0 0 10px;font-family:var(--serif);font-size:16.5px;color:var(--ink)}
-.cite .src{font-family:var(--mono);font-size:12px;color:var(--ink-3)}
-.cite .src a{color:var(--seal)}
+  /* ---------- top bar ---------- */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    padding: 1.1rem 0; border-bottom: 1px solid var(--line-soft);
+  }
+  .brand { display: flex; align-items: center; gap: .6rem; text-decoration: none; }
+  .brand svg { flex: none; }
+  .brand b {
+    font-family: var(--font-mono); font-size: .82rem; letter-spacing: .1em;
+    text-transform: uppercase; font-weight: 600;
+  }
+  .navlinks { display: flex; gap: 1.1rem; align-items: center; }
+  .navlinks a {
+    font-size: var(--step-sm); color: var(--ink-soft); text-decoration: none;
+  }
+  .navlinks a:hover { color: var(--seal); }
+  #themeBtn {
+    background: transparent; border: 1px solid var(--line); color: var(--ink-soft);
+    border-radius: 999px; width: 2rem; height: 2rem; cursor: pointer; font-size: .85rem;
+    display: grid; place-items: center; padding: 0;
+  }
+  #themeBtn:hover { border-color: var(--seal); color: var(--seal); }
+  @media (max-width: 620px) { .navlinks a:not(.keep) { display: none; } }
 
-/* honest state */
-.state{background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:22px 24px;margin-top:24px}
-.state h3{font-size:16px;margin:0 0 10px;font-weight:650}
-.state ul{margin:0;padding-left:20px;color:var(--ink-2);font-size:15px}
-.state li{margin:7px 0}
-.state li b{color:var(--ink)}
+  /* ---------- hero ---------- */
+  .hero { padding: 4rem 0 3rem; }
+  .hero h1 {
+    font-family: var(--font-serif); font-size: var(--step-hero); line-height: 1.06;
+    font-weight: 600; letter-spacing: -.02em; margin: 0; text-wrap: balance;
+  }
+  .hero .sub {
+    font-size: var(--step-1); color: var(--ink-soft); max-width: 60ch; margin: 1.2rem 0 0;
+  }
+  .hero .sub b { color: var(--ink); font-weight: 600; }
 
-.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:26px;margin-top:22px}
-.cols h3{font-size:16px;font-weight:650;margin-bottom:8px}
-.cols p{margin:0;font-size:15px;color:var(--ink-2)}
-.cols a{color:var(--seal)}
+  .lifecycle {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
+    gap: 1px; background: var(--line); border: 1px solid var(--line);
+    border-radius: 12px; overflow: hidden; margin-top: 2.4rem; box-shadow: var(--shadow);
+  }
+  .ph { background: var(--surface); padding: 1.3rem 1.25rem; position: relative; }
+  .ph::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 3px; }
+  .ph.d::before { background: var(--flag); }
+  .ph.e::before { background: var(--seal); }
+  .ph.r::before { background: var(--time); }
+  .ph .when {
+    font-family: var(--font-mono); font-size: .7rem; letter-spacing: .13em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .ph h3 { font-size: var(--step-1); margin: .5rem 0 .35rem; font-weight: 650; }
+  .ph.d h3 { color: var(--flag-ink); }
+  .ph.e h3 { color: var(--seal-ink); }
+  .ph.r h3 { color: var(--time-ink); }
+  .ph p { margin: 0; font-size: var(--step-sm); color: var(--ink-soft); }
+  .ph .tool {
+    display: inline-block; margin-top: .6rem; font-family: var(--font-mono);
+    font-size: .78rem; color: var(--ink); background: var(--surface-2);
+    border: 1px solid var(--line); border-radius: 5px; padding: .12rem .4rem;
+  }
+  :root[data-theme="dark"] .ph.d h3, :root[data-theme="dark"] .ph.e h3, :root[data-theme="dark"] .ph.r h3 { filter: brightness(1.08); }
 
-footer{padding:36px 0 60px;font-size:13.5px;color:var(--ink-3)}
-footer a{color:var(--ink-2)}
-footer p{margin:6px 0}
-.pill{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.08em;
-  text-transform:uppercase;color:var(--seal);background:var(--seal-soft);
-  padding:3px 9px;border-radius:20px}
+  /* ---------- sections ---------- */
+  section { padding: 3.6rem 0; border-top: 1px solid var(--line-soft); }
+  section h2 {
+    font-family: var(--font-serif); font-size: var(--step-3); font-weight: 600;
+    letter-spacing: -.015em; margin: 0 0 .6rem; text-wrap: balance;
+  }
+  .sec-sub { color: var(--ink-soft); max-width: 66ch; margin: 0; }
+
+  /* ---------- graph ---------- */
+  figure.graph { margin: 2rem 0 0; }
+  .canvas-shell {
+    position: relative; background: var(--surface); border: 1px solid var(--line);
+    border-radius: 14px; box-shadow: var(--shadow); overflow: hidden;
+  }
+  #ecosystem { display: block; width: 100%; height: 460px; }
+  @media (max-width: 640px) { #ecosystem { height: 380px; } }
+  figcaption {
+    font-size: var(--step-sm); color: var(--muted); margin-top: .8rem;
+    display: flex; flex-wrap: wrap; gap: .35rem 1.1rem; align-items: center;
+  }
+  .key { display: inline-flex; align-items: center; gap: .35rem; }
+  .key i { width: .6rem; height: .6rem; border-radius: 50%; display: inline-block; }
+
+  /* ---------- table ---------- */
+  .tscroll { overflow-x: auto; margin-top: 1.8rem; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; min-width: 660px; font-size: var(--step-sm); }
+  th, td { text-align: left; padding: .85rem .95rem; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+  tr:last-child td { border-bottom: 0; }
+  thead th {
+    font-family: var(--font-mono); font-size: .7rem; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--muted); font-weight: 500; white-space: nowrap; background: var(--surface-2);
+  }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--font-mono); white-space: nowrap; }
+  td .nm { font-weight: 650; text-decoration: none; border-bottom: 1.5px solid var(--seal); }
+  td .nm:hover { background: var(--seal-wash); }
+  .role { font-family: var(--font-mono); font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+  .role.d { color: var(--flag-ink); } .role.e { color: var(--seal-ink); }
+  .role.r { color: var(--time-ink); } .role.m { color: var(--muted); }
+  .lic { font-family: var(--font-mono); font-size: .76rem; color: var(--muted); white-space: nowrap; }
+  .tnote { font-size: var(--step-sm); color: var(--muted); margin: .8rem 0 0; }
+
+  /* ---------- uptake ---------- */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 1rem; margin-top: 1.8rem; }
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    padding: 1.15rem 1.25rem; box-shadow: var(--shadow);
+  }
+  .card .tag {
+    font-family: var(--font-mono); font-size: .68rem; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--seal-ink);
+  }
+  .card blockquote {
+    margin: .6rem 0 .7rem; font-family: var(--font-serif); font-size: 1.02rem;
+    line-height: 1.5; color: var(--ink);
+  }
+  .card .src { font-size: .8rem; color: var(--muted); font-family: var(--font-mono); }
+  .card .src a { color: var(--seal); }
+  .bench { display: flex; gap: 1.4rem; margin: .7rem 0 .5rem; }
+  .bench div { flex: 1; }
+  .bench .v { font-family: var(--font-mono); font-size: 1.5rem; font-variant-numeric: tabular-nums; }
+  .bench .l { font-size: .76rem; color: var(--muted); }
+
+  .chips { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.5rem; }
+  .chip {
+    font-size: .83rem; background: var(--surface); border: 1px solid var(--line);
+    border-radius: 999px; padding: .3rem .8rem; color: var(--ink-soft); text-decoration: none;
+  }
+  .chip:hover { border-color: var(--seal); color: var(--seal); }
+
+  /* ---------- state ---------- */
+  .state-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin-top: 1.8rem; }
+  .state {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 1.2rem 1.35rem;
+  }
+  .state.now { border-left: 3px solid var(--flag); }
+  .state.next { border-left: 3px solid var(--seal); }
+  .state h3 { font-size: var(--step-1); margin: 0 0 .6rem; font-weight: 650; }
+  .state ul { margin: 0; padding-left: 1.15rem; color: var(--ink-soft); font-size: var(--step-sm); }
+  .state li { margin: .45rem 0; }
+  .state li b { color: var(--ink); }
+
+  .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(255px, 1fr)); gap: 1.6rem; margin-top: 1.6rem; }
+  .cols h3 { font-size: var(--step-1); font-weight: 650; margin: 0 0 .4rem; }
+  .cols p { margin: 0; font-size: var(--step-sm); color: var(--ink-soft); }
+  .cols a { color: var(--seal); }
+
+  footer { padding: 2.6rem 0 4rem; font-size: var(--step-sm); color: var(--muted); border-top: 1px solid var(--line-soft); }
+  footer p { margin: .4rem 0; max-width: 70ch; }
+  footer a { color: var(--ink-soft); }
 </style>
 </head>
 <body>
+<a class="skip" href="#main">Skip to content</a>
 
 <div class="wrap">
+  <div class="topbar">
+    <a class="brand" href="#main">
+      <svg width="24" height="24" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--seal)" stroke-width="2.4"/>
+        <path d="M9.5 16.4l4.4 4.4 9-9.2" fill="none" stroke="var(--flag)"
+              stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <b>Auditable&nbsp;Agents</b>
+    </a>
+    <nav class="navlinks">
+      <a href="#components">Components</a>
+      <a href="#map">Ecosystem</a>
+      <a href="#uptake">Uptake</a>
+      <a href="#governance">Governance</a>
+      <a class="keep" href="https://github.com/auditable-agents">GitHub</a>
+      <button id="themeBtn" type="button" aria-label="Toggle light and dark theme">◐</button>
+    </nav>
+  </div>
+</div>
 
-<header>
-  <div class="mark">
-    <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
-      <circle cx="13" cy="13" r="11.5" fill="none" stroke="currentColor" stroke-width="1.4" opacity=".45"/>
-      <path d="M7.5 13.2l3.6 3.6 7.4-7.6" fill="none" stroke="currentColor"
-            stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    <span>Auditable&nbsp;Agents</span>
+<main id="main">
+<div class="wrap">
+
+  <div class="hero">
+    <p class="eyebrow">Open-source ecosystem</p>
+    <h1>An accountability layer for agents that act</h1>
+    <p class="sub">When an agent takes a consequential action and the outcome is wrong, three
+    questions usually have no good answer: <b>what did it rely on</b>, <b>could that have been
+    checked before it committed</b>, and <b>can the action be undone</b>. These tools answer all
+    three, on one shared model of what makes an agent auditable.</p>
+
+    <div class="lifecycle">
+      <div class="ph d">
+        <div class="when">Before deployment</div>
+        <h3>Detect</h3>
+        <p>Scan agent code and tool configurations for risks that would otherwise surface only at
+        run time.</p>
+        <span class="tool">agent-audit</span>
+      </div>
+      <div class="ph e">
+        <div class="when">At execution</div>
+        <h3>Enforce</h3>
+        <p>Gate a tool call before it commits, and write a signed, tamper-evident record of the
+        decision.</p>
+        <span class="tool">Aegis</span>
+      </div>
+      <div class="ph r">
+        <div class="when">After the commit</div>
+        <h3>Recover</h3>
+        <p>Replay a decision against current state, and reverse the action when its basis no longer
+        holds.</p>
+        <span class="tool">auditable</span>
+      </div>
+    </div>
   </div>
 
-  <h1>An accountability layer for agents that act</h1>
-  <p class="lede">When an agent takes a consequential action and the outcome is wrong, three
-  questions usually have no good answer: <b>what did it rely on</b>, <b>could that have been
-  checked first</b>, and <b>can the action be undone</b>. This is an open-source ecosystem for
-  answering all three.</p>
+  <section id="components">
+    <p class="eyebrow">01 / Components</p>
+    <h2>One framework, three tools, and a map</h2>
+    <p class="sec-sub">The three tools each install and run on their own; awesome-auditable-ai is a
+    curated index rather than software. What makes them an ecosystem is that they cover a single
+    agent action end to end, against one shared definition of auditability.</p>
 
-  <div class="phase-grid">
-    <div class="phase">
-      <div class="when">Before deployment</div>
-      <h3>Detect</h3>
-      <p>Scan agent code and configurations for risks that would only surface at run time.
-      <code>agent-audit</code></p>
+    <div class="tscroll">
+    <table>
+      <thead>
+        <tr><th>Component</th><th>Role</th><th class="num">Stars</th><th class="num">Forks</th>
+        <th>What it does</th><th>License</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><a class="nm" href="https://arxiv.org/abs/2604.05485">Auditable Agents</a></td>
+          <td><span class="role m">Framework</span></td>
+          <td class="num">&mdash;</td><td class="num">&mdash;</td>
+          <td>Five auditability dimensions, the detect / enforce / recover model, and the
+          Auditability Card, a disclosure format for stating which guarantees a system offers.</td>
+          <td class="lic">paper</td>
+        </tr>
+        <tr>
+          <td><a class="nm" href="https://github.com/HeadyZhang/agent-audit">agent-audit</a></td>
+          <td><span class="role d">Detect</span></td>
+          <td class="num">206</td><td class="num">24</td>
+          <td>Static scanner for agent code and Model Context Protocol configurations. 51 rules
+          mapped to the OWASP Agentic Top 10, with taint analysis. Works with LangChain, CrewAI,
+          and AutoGen.</td>
+          <td class="lic">MIT</td>
+        </tr>
+        <tr>
+          <td><a class="nm" href="https://github.com/Justin0504/Aegis">Aegis</a></td>
+          <td><span class="role e">Enforce</span></td>
+          <td class="num">370</td><td class="num">39</td>
+          <td>Runtime policy enforcement with human-in-the-loop approval and a kill switch. Writes
+          Ed25519-signed, hash-chained decision records. No changes to agent code.</td>
+          <td class="lic">MIT</td>
+        </tr>
+        <tr>
+          <td><a class="nm" href="https://github.com/yzhao062/auditable">auditable</a></td>
+          <td><span class="role r">Recover</span></td>
+          <td class="num">18</td><td class="num">1</td>
+          <td>Captures what a decision relied on, replays it against live state, and reverses a
+          committed action when the basis fails. One typed graph across past, present, and future.</td>
+          <td class="lic">Apache-2.0</td>
+        </tr>
+        <tr>
+          <td><a class="nm" href="https://github.com/yzhao062/awesome-auditable-ai">awesome-auditable-ai</a></td>
+          <td><span class="role m">Map</span></td>
+          <td class="num">17</td><td class="num">7</td>
+          <td>Curated index of papers, tools, datasets, benchmarks, and standards for building and
+          auditing reliable agents.</td>
+          <td class="lic">CC0-1.0</td>
+        </tr>
+      </tbody>
+    </table>
     </div>
-    <div class="phase">
-      <div class="when">At execution</div>
-      <h3>Enforce</h3>
-      <p>Gate a tool call before it commits, and write a tamper-evident record of the decision.
-      <code>Aegis</code></p>
+    <p class="tnote">Star and fork counts recorded 2 August 2026. Counts move; the roles do not.</p>
+  </section>
+
+  <section id="map">
+    <p class="eyebrow">02 / The ecosystem, connected</p>
+    <h2>What sits around the core</h2>
+    <p class="sec-sub">An ecosystem is layered. The shared framework sits at the centre; around it
+    orbit the tools that implement it, the independent work that cites or benchmarks against it, and
+    the coverage and support that carry it outward. Hover any node to trace its ties.</p>
+
+    <figure class="graph">
+      <div class="canvas-shell">
+        <canvas id="ecosystem" aria-label="Layered orbital map of the Auditable Agents ecosystem: the framework at the core, the four tools around it, then independent work that cites or benchmarks it, then coverage and institutional support"></canvas>
+      </div>
+      <figcaption>
+        <span class="key"><i style="background:var(--seal)"></i>Framework</span>
+        <span class="key"><i style="background:var(--flag)"></i>Tools</span>
+        <span class="key"><i style="background:var(--time)"></i>Independent work citing or benchmarking it</span>
+        <span>Rings are ecosystem layers. Independent work is shown because it is externally
+        checkable; it does not indicate endorsement or adoption.</span>
+      </figcaption>
+    </figure>
+  </section>
+
+  <section id="uptake">
+    <p class="eyebrow">03 / Independent uptake</p>
+    <h2>Other groups have started to build on this</h2>
+    <p class="sec-sub">These are early and specific signals rather than proof of broad adoption.
+    They are listed with sources so anyone can check them, including the places where the record is
+    still thin.</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="tag">Used as a baseline</div>
+        <blockquote>Praetor evaluates against Aegis as the pre-execution system to beat, citing it
+        by exact title.</blockquote>
+        <div class="bench">
+          <div><div class="v" style="color:var(--seal)">12.8%</div><div class="l">attack success, Aegis</div></div>
+          <div><div class="v" style="color:var(--ink-soft)">2.2%</div><div class="l">attack success, Praetor</div></div>
+        </div>
+        <div class="src"><a href="https://arxiv.org/abs/2604.26274">arXiv:2604.26274</a></div>
+      </div>
+
+      <div class="card">
+        <div class="tag">Cited as prior art</div>
+        <blockquote>&ldquo;Our contribution is therefore not the enforcement mechanism, which
+        pre-execution systems such as AEGIS &hellip; already establish.&rdquo;</blockquote>
+        <div class="src">Reason Less, Verify More &middot;
+        <a href="https://arxiv.org/abs/2607.07405">arXiv:2607.07405</a></div>
+      </div>
+
+      <div class="card">
+        <div class="tag">Adopted as vocabulary</div>
+        <blockquote>&ldquo;Auditable Agents frames recoverability, policy checkability,
+        responsibility attribution, and evidence integrity as system properties &hellip; Agent Audit
+        analyzes code and deployment artifacts before execution.&rdquo;</blockquote>
+        <div class="src">Georgia Tech and UIUC &middot;
+        <a href="https://arxiv.org/abs/2607.25364">arXiv:2607.25364</a></div>
+      </div>
+
+      <div class="card">
+        <div class="tag">Placed in a survey</div>
+        <blockquote>&ldquo;Agent Audit &hellip; inspect policies, applications, skills, or runtime
+        evidence to produce audit or compliance artifacts.&rdquo;</blockquote>
+        <div class="src">Agentic Services Computing &middot;
+        <a href="https://arxiv.org/abs/2509.24380">arXiv:2509.24380</a></div>
+      </div>
     </div>
-    <div class="phase">
-      <div class="when">After the commit</div>
-      <h3>Recover</h3>
-      <p>Replay a decision against current state and roll the action back when its basis no
-      longer holds. <code>auditable</code></p>
+
+    <div class="chips">
+      <span class="chip" style="border-color:var(--line);color:var(--muted)">Also citing the framework:</span>
+      <a class="chip" href="https://arxiv.org/abs/2606.30970">AgentBound</a>
+      <a class="chip" href="https://arxiv.org/abs/2605.04093">Decision Evidence Maturity Model</a>
+      <a class="chip" href="https://arxiv.org/abs/2607.01641">arXiv:2607.01641</a>
+      <a class="chip" href="https://arxiv.org/abs/2604.15367">arXiv:2604.15367</a>
     </div>
-  </div>
-</header>
+  </section>
 
-<section id="components">
-  <div class="eyebrow">01 / Components</div>
-  <h2>One layer, four tools, one framework</h2>
-  <p>Each tool is useful on its own. Together they cover an agent action end to end, which is
-  why they are maintained as one ecosystem rather than four unrelated repositories.</p>
+  <section id="governance">
+    <p class="eyebrow">04 / Governance</p>
+    <h2>Where this ecosystem actually stands</h2>
+    <p class="sec-sub">A publicly accurate account matters more than a flattering one, especially
+    for tooling whose job is to make other systems inspectable. Both columns are current.</p>
 
-  <div class="tbl-scroll">
-  <table>
-    <caption>Star and fork counts recorded 2 August 2026. Every component is public and
-    independently installable.</caption>
-    <thead>
-      <tr><th>Component</th><th>Role</th><th class="num">Stars</th><th class="num">Forks</th>
-      <th>What it does</th><th>License</th></tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><a href="https://arxiv.org/abs/2604.05485">Auditable Agents</a></td>
-        <td class="role">Framework</td>
-        <td class="num">&mdash;</td><td class="num">&mdash;</td>
-        <td>Defines five auditability dimensions, the detect / enforce / recover model, and the
-        Auditability Card, a disclosure format for stating which guarantees a system offers.</td>
-        <td class="lic">paper</td>
-      </tr>
-      <tr>
-        <td><a href="https://github.com/HeadyZhang/agent-audit">agent-audit</a></td>
-        <td class="role">Detect</td>
-        <td class="num">206</td><td class="num">24</td>
-        <td>Static scanner for agent code and Model Context Protocol configurations. 51 rules
-        mapped to the OWASP Agentic Top 10, with taint analysis. Works with LangChain, CrewAI,
-        and AutoGen.</td>
-        <td class="lic">MIT</td>
-      </tr>
-      <tr>
-        <td><a href="https://github.com/Justin0504/Aegis">Aegis</a></td>
-        <td class="role">Enforce</td>
-        <td class="num">370</td><td class="num">39</td>
-        <td>Runtime policy enforcement with human-in-the-loop approval and a kill switch. Writes
-        Ed25519-signed, hash-chained records of each decision. No changes to agent code.</td>
-        <td class="lic">MIT</td>
-      </tr>
-      <tr>
-        <td><a href="https://github.com/yzhao062/auditable">auditable</a></td>
-        <td class="role">Recover</td>
-        <td class="num">18</td><td class="num">1</td>
-        <td>Captures what a decision relied on, replays it against live state, and reverses a
-        committed action when the basis fails. One typed graph across past, present, and future.</td>
-        <td class="lic">Apache-2.0</td>
-      </tr>
-      <tr>
-        <td><a href="https://github.com/yzhao062/awesome-auditable-ai">awesome-auditable-ai</a></td>
-        <td class="role">Map</td>
-        <td class="num">17</td><td class="num">7</td>
-        <td>Curated index of papers, tools, datasets, benchmarks, and standards for building and
-        auditing reliable agents.</td>
-        <td class="lic">CC0-1.0</td>
-      </tr>
-    </tbody>
-  </table>
-  </div>
-</section>
-
-<section id="uptake">
-  <div class="eyebrow">02 / Independent uptake</div>
-  <h2>Other groups have started to build on this</h2>
-  <p>Independent laboratories now cite this work as the reference point for their own systems.
-  These are early and specific signals rather than evidence of broad adoption, and they are
-  listed here so anyone can check them.</p>
-
-  <div class="cites">
-    <div class="cite">
-      <blockquote>&ldquo;Auditable Agents frames recoverability, policy checkability, responsibility
-      attribution, and evidence integrity as system properties &hellip; Agent Audit analyzes code
-      and deployment artifacts before execution.&rdquo;</blockquote>
-      <div class="src">Georgia Institute of Technology and University of Illinois Urbana-Champaign,
-      <a href="https://arxiv.org/abs/2607.25364">arXiv:2607.25364</a></div>
+    <div class="state-grid">
+      <div class="state now">
+        <h3>Today, plainly</h3>
+        <ul>
+          <li>Each repository is effectively maintained by <b>one developer</b>. No component yet
+          has a second regular committer.</li>
+          <li>The four repositories carry <b>three license types</b>, MIT for two of them plus
+          Apache-2.0 and CC0-1.0, and grew up in separate personal accounts.</li>
+          <li>There is <b>no shared release process</b>, no cross-component interface contract, and
+          no published governance model.</li>
+          <li>The Auditability Card has been referenced by others, but <b>no independent project
+          has published a completed Card</b> yet.</li>
+        </ul>
+      </div>
+      <div class="state next">
+        <h3>What this organization is for</h3>
+        <ul>
+          <li>Hold the components under <b>one umbrella</b>, so the ecosystem's identity does not
+          depend on any individual maintainer's personal or commercial pages.</li>
+          <li>Publish a <b>component manifest</b> and one working cross-component interface, so a
+          finding, a policy decision, and a recovery record can refer to the same action.</li>
+          <li>Publish a <b>governance model</b> covering maintainer appointment, succession, release
+          authority, and conflict handling, plus a <b>security policy</b> with coordinated
+          disclosure.</li>
+          <li>Grow a <b>contributor base</b> past one maintainer per repository, which is the main
+          thing between this and a sustainable ecosystem.</li>
+        </ul>
+      </div>
     </div>
-    <div class="cite">
-      <blockquote>&ldquo;Our contribution is therefore not the enforcement mechanism, which
-      pre-execution systems such as AEGIS &hellip; already establish.&rdquo;</blockquote>
-      <div class="src">Reason Less, Verify More,
-      <a href="https://arxiv.org/abs/2607.07405">arXiv:2607.07405</a></div>
-    </div>
-    <div class="cite">
-      <blockquote>&ldquo;Agent Audit &hellip; inspect policies, applications, skills, or runtime
-      evidence to produce audit or compliance artifacts.&rdquo;</blockquote>
-      <div class="src">Agentic Services Computing, a survey,
-      <a href="https://arxiv.org/abs/2509.24380">arXiv:2509.24380</a></div>
-    </div>
-  </div>
-</section>
+  </section>
 
-<section id="governance">
-  <div class="eyebrow">03 / Governance</div>
-  <h2>Where this ecosystem actually stands</h2>
-  <p>Publishing an accurate account of the current state matters more than a polished one,
-  particularly for tooling whose job is to make other systems inspectable.</p>
-
-  <div class="state">
-    <h3>Today</h3>
-    <ul>
-      <li>Each repository is effectively maintained by <b>one developer</b>. No component yet has
-      a second regular committer.</li>
-      <li>The components sit under <b>four different licenses</b> and were developed in separate
-      personal accounts.</li>
-      <li>There is <b>no shared release process</b>, no cross-component interface contract, and no
-      published governance model.</li>
-      <li>A tool that audits other systems should carry <b>the strongest integrity guarantees</b>
-      of anything it inspects. That standard is not met yet.</li>
-    </ul>
-  </div>
-
-  <div class="state" style="margin-top:16px">
-    <h3>What this organization is for</h3>
-    <ul>
-      <li>Hold the components under <b>one umbrella</b> so the ecosystem has an identity that does
-      not depend on any individual maintainer's personal or commercial pages.</li>
-      <li>Publish a <b>component manifest</b> and at least one working cross-component interface,
-      so a finding, a policy decision, and a recovery record can refer to the same action.</li>
-      <li>Publish a <b>governance model</b> covering maintainer appointment, succession, release
-      authority, and conflict handling, plus a <b>security policy</b> with coordinated disclosure.</li>
-      <li>Grow a <b>contributor base</b> beyond a single maintainer per repository, which is the
-      main thing standing between this and a sustainable ecosystem.</li>
-    </ul>
-  </div>
-</section>
-
-<section id="contributing">
-  <div class="eyebrow">04 / Taking part</div>
-  <h2>Contributing and reporting</h2>
-  <div class="cols">
-    <div>
-      <h3>Contribute</h3>
-      <p>Each repository takes issues and pull requests directly. Good starting points are new
-      detection rules for <a href="https://github.com/HeadyZhang/agent-audit">agent-audit</a>,
-      policy examples for <a href="https://github.com/Justin0504/Aegis">Aegis</a>, and additions to
-      <a href="https://github.com/yzhao062/awesome-auditable-ai">awesome-auditable-ai</a>.</p>
+  <section id="contributing">
+    <p class="eyebrow">05 / Taking part</p>
+    <h2>Contributing, reporting, disclosing</h2>
+    <div class="cols">
+      <div>
+        <h3>Contribute</h3>
+        <p>Each repository takes issues and pull requests directly. Good entry points are new
+        detection rules for <a href="https://github.com/HeadyZhang/agent-audit">agent-audit</a>,
+        policy examples for <a href="https://github.com/Justin0504/Aegis">Aegis</a>, and additions
+        to <a href="https://github.com/yzhao062/awesome-auditable-ai">awesome-auditable-ai</a>.</p>
+      </div>
+      <div>
+        <h3>Report a vulnerability</h3>
+        <p><b>Please do not open a public issue for a security problem.</b> Reporting routes differ
+        by component today, and a single coordinated process across the ecosystem does not exist
+        yet. <a href="https://github.com/Justin0504/Aegis/blob/main/SECURITY.md">Aegis</a> publishes
+        a private email contact and accepts encrypted reports.
+        <a href="https://github.com/HeadyZhang/agent-audit/blob/main/SECURITY.md">agent-audit</a>
+        publishes a policy. <code>auditable</code> and <code>awesome-auditable-ai</code> have no
+        published policy yet; contact their maintainer privately rather than filing an issue.
+        Establishing one disclosure process, with published response targets, across every
+        component is part of the work this organization exists to do.</p>
+      </div>
+      <div>
+        <h3>Publish an Auditability Card</h3>
+        <p>The Card is a disclosure format for stating which accountability guarantees a system
+        provides, described in <a href="https://arxiv.org/abs/2604.05485">the framework paper</a>.
+        No independent project has published one yet. If you publish the first, open an issue and it
+        will be listed here.</p>
+      </div>
     </div>
-    <div>
-      <h3>Report a vulnerability</h3>
-      <p>Please do not open a public issue for a security problem. Report it privately through the
-      relevant repository's GitHub security advisory page, and expect an acknowledgement while a
-      fix and coordinated disclosure are arranged.</p>
-    </div>
-    <div>
-      <h3>Publish an Auditability Card</h3>
-      <p>The Auditability Card is a disclosure format for stating which accountability guarantees a
-      system provides. The format is described in
-      <a href="https://arxiv.org/abs/2604.05485">the framework paper</a>. If you publish one for
-      your own system, open an issue so it can be listed.</p>
-    </div>
-  </div>
-</section>
-
-<footer>
-  <p><span class="pill">Open source</span></p>
-  <p>An independent open-source ecosystem for AI agent accountability. Maintained by its
-  contributors; not affiliated with, and not speaking for, any company.</p>
-  <p>Components are released under their individual licenses as listed above.
-  Source for this page: <a href="https://github.com/auditable-agents/auditable-agents.github.io">auditable-agents.github.io</a>.</p>
-</footer>
+  </section>
 
 </div>
+</main>
+
+<div class="wrap">
+<footer>
+  <p><b>The Auditable Agents Ecosystem</b> is an independent open-source project, maintained by its
+  contributors. It is not affiliated with, and does not speak for, any company.</p>
+  <p>Components are released under their individual licenses as listed above. Page content is
+  CC0-1.0. Source:
+  <a href="https://github.com/auditable-agents/auditable-agents.github.io">auditable-agents.github.io</a>.</p>
+</footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---- theme toggle ---- */
+  var root = document.documentElement, btn = document.getElementById("themeBtn");
+  try {
+    var saved = localStorage.getItem("aa-theme");
+    if (saved) root.setAttribute("data-theme", saved);
+  } catch (e) {}
+  btn.addEventListener("click", function () {
+    var isDark = root.getAttribute("data-theme") === "dark" ||
+      (!root.getAttribute("data-theme") &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches);
+    var next = isDark ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    try { localStorage.setItem("aa-theme", next); } catch (e) {}
+    if (typeof window.__aaRedraw === "function") window.__aaRedraw();
+  });
+
+  /* ---- layered orbital ecosystem map ---- */
+  var canvas = document.getElementById("ecosystem");
+  if (!canvas || !canvas.getContext) return;
+  var ctx = canvas.getContext("2d");
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function cssVar(n) {
+    return getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  }
+
+  var HUB = { name: "Auditable Agents", sub: "framework", hub: true, r: 9 };
+
+  var LAYERS = [
+    { name: "Tools", speed: 0.050, nodes: [
+      { name: "agent-audit", sub: "detect", kind: 0, r: 6.5 },
+      { name: "Aegis", sub: "enforce", kind: 1, r: 6.5 },
+      { name: "auditable", sub: "recover", kind: 2, r: 5.5 },
+      { name: "awesome-auditable-ai", sub: "map", kind: 3, r: 5 }
+    ]},
+    { name: "Cites or benchmarks", speed: 0.030, nodes: [
+      { name: "Praetor", sub: "benchmarks Aegis", kind: 4, r: 5.5 },
+      { name: "Reason Less, Verify More", sub: "cites Aegis", kind: 4, r: 5 },
+      { name: "Accentrust", sub: "GT + UIUC", kind: 4, r: 5.5 },
+      { name: "Agentic Services Computing", sub: "survey", kind: 4, r: 5 },
+      { name: "AgentBound", sub: "cites framework", kind: 4, r: 4.5 },
+      { name: "DEMM", sub: "cites framework", kind: 4, r: 4.5 }
+    ]},
+    { name: "Cites or benchmarks", speed: 0.018, nodes: [
+      { name: "Trace2Policy", sub: "cites framework", kind: 4, r: 4.5 },
+      { name: "Proof-Carrying Agent Actions", sub: "cites framework", kind: 4, r: 4.5 },
+      { name: "OpenClawBench", sub: "cites framework", kind: 4, r: 4.5 },
+      { name: "When Agents Do Not Stop", sub: "cites agent-audit", kind: 4, r: 4 },
+      { name: "SoK: Agentic Commerce", sub: "cites agent-audit", kind: 4, r: 4 }
+    ]}
+  ];
+
+  var nodes = [HUB];
+  LAYERS.forEach(function (L, li) {
+    L.nodes.forEach(function (n, i) {
+      n.li = li;
+      n.a0 = (i / L.nodes.length) * Math.PI * 2 + li * 0.7;
+      nodes.push(n);
+    });
+  });
+
+  function nodeColor(n) {
+    if (n.hub) return cssVar("--seal") || "#1d5c4f";
+    if (n.li === 0) return [cssVar("--flag"), cssVar("--seal"), cssVar("--time"), cssVar("--muted")][n.kind] || "#b0691a";
+    if (n.li === 1) return cssVar("--time") || "#3a5f8a";
+    return cssVar("--muted") || "#79848c";
+  }
+
+  var rot = [0, 0, 0], hover = null, W = 0, H = 0, cx = 0, cy = 0, dpr = 1;
+
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = canvas.clientWidth; H = canvas.clientHeight;
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    cx = W / 2; cy = H / 2;
+    var base = Math.min(W, H * 1.55);
+    LAYERS[0].rx = base * 0.155; LAYERS[0].ry = H * 0.175;
+    LAYERS[1].rx = base * 0.285; LAYERS[1].ry = H * 0.315;
+    LAYERS[2].rx = base * 0.405; LAYERS[2].ry = H * 0.442;
+  }
+
+  function positions() {
+    HUB.x = cx; HUB.y = cy;
+    LAYERS.forEach(function (L, li) {
+      L.nodes.forEach(function (n) {
+        var a = n.a0 + rot[li];
+        n.x = cx + L.rx * Math.cos(a);
+        n.y = cy + L.ry * Math.sin(a);
+      });
+    });
+  }
+
+  function ringPath(L) {
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, L.rx, L.ry, 0, 0, Math.PI * 2);
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    positions();
+
+    var line = cssVar("--line") || "#dfe3df";
+    var ink = cssVar("--ink") || "#14191c";
+    var soft = cssVar("--ink-soft") || "#454f55";
+    var muted = cssVar("--muted") || "#79848c";
+    var seal = cssVar("--seal") || "#1d5c4f";
+
+    /* rings */
+    LAYERS.forEach(function (L) {
+      ringPath(L);
+      ctx.strokeStyle = line; ctx.globalAlpha = 0.9; ctx.lineWidth = 1;
+      ctx.setLineDash([3, 5]); ctx.stroke(); ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
+    });
+
+    /* spokes from hub */
+    nodes.forEach(function (n) {
+      if (n.hub) return;
+      var lit = !hover || hover === n || hover.hub;
+      var g = ctx.createLinearGradient(cx, cy, n.x, n.y);
+      g.addColorStop(0, seal); g.addColorStop(1, nodeColor(n));
+      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(n.x, n.y);
+      ctx.strokeStyle = g; ctx.lineWidth = hover === n ? 1.7 : 1;
+      ctx.globalAlpha = lit ? (hover === n ? 0.85 : 0.28) : 0.06;
+      ctx.stroke(); ctx.globalAlpha = 1;
+    });
+
+    /* nodes */
+    nodes.forEach(function (n) {
+      var lit = !hover || hover === n || hover.hub || n.hub;
+      var col = nodeColor(n);
+      ctx.beginPath(); ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+      ctx.fillStyle = col; ctx.globalAlpha = lit ? 1 : 0.22; ctx.fill();
+      if (n.hub) {
+        ctx.beginPath(); ctx.arc(n.x, n.y, n.r + 5, 0, Math.PI * 2);
+        ctx.strokeStyle = col; ctx.globalAlpha = 0.35; ctx.lineWidth = 1.4; ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+    });
+
+    /* labels */
+    ctx.textAlign = "center"; ctx.textBaseline = "top";
+    nodes.forEach(function (n) {
+      var lit = !hover || hover === n || hover.hub || n.hub;
+      var big = n.hub || hover === n;
+      ctx.globalAlpha = lit ? 1 : 0.18;
+      ctx.font = (big ? "600 " : "500 ") + (n.hub ? 13 : 11.5) + "px " +
+        (cssVar("--font-sans") || "system-ui");
+      ctx.fillStyle = n.hub ? ink : soft;
+      ctx.fillText(n.name, n.x, n.y + n.r + 5);
+      if (big && n.sub) {
+        ctx.font = "500 10px " + (cssVar("--font-mono") || "monospace");
+        ctx.fillStyle = muted;
+        ctx.fillText(n.sub, n.x, n.y + n.r + (n.hub ? 22 : 20));
+      }
+      ctx.globalAlpha = 1;
+    });
+  }
+
+  window.__aaRedraw = draw;
+
+  function nodeAt(mx, my) {
+    for (var i = nodes.length - 1; i >= 0; i--) {
+      var n = nodes[i], r = n.r + 7;
+      if ((mx - n.x) * (mx - n.x) + (my - n.y) * (my - n.y) <= r * r) return n;
+    }
+    return null;
+  }
+  function pos(ev) {
+    var b = canvas.getBoundingClientRect();
+    var t = ev.touches ? ev.touches[0] : ev;
+    return { x: t.clientX - b.left, y: t.clientY - b.top };
+  }
+  canvas.addEventListener("mousemove", function (ev) {
+    var p = pos(ev); var h = nodeAt(p.x, p.y);
+    if (h !== hover) { hover = h; canvas.style.cursor = h ? "pointer" : "default"; if (reduce) draw(); }
+  });
+  canvas.addEventListener("mouseleave", function () { hover = null; if (reduce) draw(); });
+  canvas.addEventListener("touchstart", function (ev) {
+    var p = pos(ev); hover = nodeAt(p.x, p.y); if (reduce) draw();
+  }, { passive: true });
+
+  var last = 0;
+  function frame(t) {
+    var dt = last ? Math.min((t - last) / 1000, 0.05) : 0;
+    last = t;
+    if (!hover) {
+      rot[0] += LAYERS[0].speed * dt;
+      rot[1] -= LAYERS[1].speed * dt;
+      rot[2] += LAYERS[2].speed * dt;
+    }
+    draw();
+    requestAnimationFrame(frame);
+  }
+
+  function boot() { resize(); draw(); if (!reduce) requestAnimationFrame(frame); }
+  window.addEventListener("resize", function () { resize(); draw(); });
+  if (window.matchMedia) {
+    var mq = window.matchMedia("(prefers-color-scheme: dark)");
+    if (mq.addEventListener) mq.addEventListener("change", draw);
+  }
+  boot();
+})();
+</script>
 </body>
 </html>
