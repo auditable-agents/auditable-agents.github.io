@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The Auditable Agents Ecosystem: Accountability for AI Agents</title>
-<meta name="description" content="An open-source ecosystem for agent accountability: detect risks before deployment, enforce policy at execution, and recover by replay and rollback after a commit. One shared framework, four tools.">
+<meta name="description" content="An open-source ecosystem for agent accountability: detect risks before deployment, enforce policy at execution, and recover by replay and rollback after a commit. One shared framework, six repositories, about 1,400 GitHub stars.">
 <link rel="canonical" href="https://auditable-agents.github.io/">
 <meta name="theme-color" content="#1d5c4f">
 <meta property="og:type" content="website">
@@ -342,7 +342,7 @@
         <tr>
           <td><a class="nm" href="https://github.com/HeadyZhang/agent-audit">agent-audit</a></td>
           <td><span class="role d">Detect</span></td>
-          <td class="num">206</td><td class="num">24</td>
+          <td class="num">211</td><td class="num">26</td>
           <td>Static scanner for agent code and Model Context Protocol configurations. 51 rules
           mapped to the OWASP Agentic Top 10, with taint analysis. Works with LangChain, CrewAI,
           and AutoGen.</td>
@@ -351,7 +351,7 @@
         <tr>
           <td><a class="nm" href="https://github.com/Justin0504/Aegis">Aegis</a></td>
           <td><span class="role e">Enforce</span></td>
-          <td class="num">370</td><td class="num">39</td>
+          <td class="num">343</td><td class="num">38</td>
           <td>Runtime policy enforcement with human-in-the-loop approval and a kill switch. Writes
           Ed25519-signed, hash-chained decision records. No changes to agent code.</td>
           <td class="lic">MIT</td>
@@ -359,7 +359,7 @@
         <tr>
           <td><a class="nm" href="https://github.com/yzhao062/auditable">auditable</a></td>
           <td><span class="role r">Recover</span></td>
-          <td class="num">18</td><td class="num">1</td>
+          <td class="num">19</td><td class="num">1</td>
           <td>Captures what a decision relied on, replays it against live state, and reverses a
           committed action when the basis fails. One typed graph across past, present, and future.</td>
           <td class="lic">Apache-2.0</td>
@@ -367,7 +367,7 @@
         <tr>
           <td><a class="nm" href="https://github.com/yzhao062/awesome-auditable-ai">awesome-auditable-ai</a></td>
           <td><span class="role m">Map</span></td>
-          <td class="num">17</td><td class="num">7</td>
+          <td class="num">20</td><td class="num">10</td>
           <td>Curated index of papers, tools, datasets, benchmarks, and standards for building and
           auditing reliable agents.</td>
           <td class="lic">CC0-1.0</td>
@@ -375,7 +375,44 @@
       </tbody>
     </table>
     </div>
-    <p class="tnote">Star and fork counts recorded 2 August 2026. Counts move; the roles do not.</p>
+
+    <h3 style="margin-top:2.4rem">The same gate, other policy domains</h3>
+    <p class="sec-sub">Two further repositories run the same check at the same point in the
+    lifecycle: they intercept an action before it commits and apply a declared policy. What differs
+    is the policy. One governs prose, the other governs shell and filesystem commands, so neither
+    belongs in the detect / enforce / recover core above. They are worth naming anyway. agent-style
+    is the most-starred repository in the family, and together the pair is the evidence that the
+    enforcement mechanism carries past agent security into any domain where a policy can be
+    declared.</p>
+
+    <div class="tscroll">
+    <table>
+      <thead>
+        <tr><th>Component</th><th>Role</th><th class="num">Stars</th><th class="num">Forks</th>
+        <th>What it does</th><th>License</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><a class="nm" href="https://github.com/yzhao062/agent-style">agent-style</a></td>
+          <td><span class="role e">Enforce &middot; prose</span></td>
+          <td class="num">617</td><td class="num">32</td>
+          <td>A 21-rule writing ruleset with a pre-write hook that blocks a non-conforming file
+          write before it lands, plus adapters for several agent runtimes.</td>
+          <td class="lic">CC-BY-4.0, MIT</td>
+        </tr>
+        <tr>
+          <td><a class="nm" href="https://github.com/yzhao062/anywhere-agents">anywhere-agents</a></td>
+          <td><span class="role e">Enforce &middot; harness</span></td>
+          <td class="num">212</td><td class="num">24</td>
+          <td>Portable agent configuration carrying a pre-tool-use risk classifier that gates
+          destructive git, publish, and filesystem commands across agent harnesses.</td>
+          <td class="lic">Apache-2.0</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="tnote">Star and fork counts recorded 11 August 2026; about 1,400 stars across the six
+    repositories. Counts move; the roles do not.</p>
   </section>
 
   <section id="map">
@@ -401,7 +438,7 @@
 
   <section id="uptake">
     <p class="eyebrow">03 / Independent uptake</p>
-    <h2>Other groups have started to build on this</h2>
+    <h2>Other groups have started to cite and benchmark this</h2>
     <p class="sec-sub">These are early and specific signals rather than proof of broad adoption.
     They are listed with sources so anyone can check them, including the places where the record is
     still thin.</p>
@@ -432,7 +469,7 @@
         <blockquote>&ldquo;Auditable Agents frames recoverability, policy checkability,
         responsibility attribution, and evidence integrity as system properties &hellip; Agent Audit
         analyzes code and deployment artifacts before execution.&rdquo;</blockquote>
-        <div class="src">Georgia Tech and UIUC &middot;
+        <div class="src">Accentrust, with Georgia Tech and UIUC affiliations &middot;
         <a href="https://arxiv.org/abs/2607.25364">arXiv:2607.25364</a></div>
       </div>
 
@@ -466,8 +503,9 @@
         <ul>
           <li>Each repository is effectively maintained by <b>one developer</b>. No component yet
           has a second regular committer.</li>
-          <li>The four repositories carry <b>three license types</b>, MIT for two of them plus
-          Apache-2.0 and CC0-1.0, and grew up in separate personal accounts.</li>
+          <li>The six repositories carry <b>four license types</b>, MIT, Apache-2.0, CC0-1.0, and
+          CC-BY-4.0, and grew up in separate personal accounts. The most-starred one splits content
+          from code licensing, which GitHub's own license metadata cannot express.</li>
           <li>There is <b>no shared release process</b>, no cross-component interface contract, and
           no published governance model.</li>
           <li>The Auditability Card has been referenced by others, but <b>no independent project
