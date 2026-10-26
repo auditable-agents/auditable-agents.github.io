@@ -255,6 +255,99 @@
   footer { padding: 2.6rem 0 4rem; font-size: var(--step-sm); color: var(--muted); border-top: 1px solid var(--line-soft); }
   footer p { margin: .4rem 0; max-width: 70ch; }
   footer a { color: var(--ink-soft); }
+  /* ---------- additive updates & research ---------- */
+  @media (max-width: 960px) { .navlinks a[href="#updates"], .navlinks a[href="#research"] { display: none; } }
+  #updates .cards, #research .cards { grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); }
+  #updates .news-tags { flex-wrap: wrap; }
+  .hero-strip {
+    margin-top: 1.6rem; display: flex; align-items: center; flex-wrap: wrap; gap: .75rem;
+    font-size: var(--step-sm); color: var(--ink-soft);
+  }
+  .hero-strip .status-pill {
+    display: inline-flex; align-items: center; gap: .45rem; background: var(--surface-2);
+    border: 1px solid var(--line); border-radius: 999px; padding: .2rem .65rem;
+    font-family: var(--font-mono); font-size: var(--step-cap); text-transform: uppercase;
+    letter-spacing: .08em; color: var(--ink); font-weight: 600;
+  }
+  .hero-strip .status-dot {
+    width: .5rem; height: .5rem; border-radius: 50%; background: var(--seal);
+    display: inline-block;
+  }
+  .hero-strip-nav { display: inline-flex; align-items: center; gap: .5rem; }
+  .hero-strip-nav a {
+    color: var(--ink-soft); text-decoration: none; border-bottom: 1px dashed var(--muted);
+    font-weight: 500;
+  }
+  .hero-strip-nav a:hover { color: var(--seal); border-bottom-color: var(--seal); }
+  .hero-strip-sep { color: var(--muted); }
+
+  .news-card {
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .news-meta {
+    display: flex; align-items: center; justify-content: space-between; gap: .5rem;
+    margin-bottom: .6rem; flex-wrap: wrap;
+  }
+  .news-tags { display: inline-flex; align-items: center; gap: .5rem; }
+  .news-date {
+    font-family: var(--font-mono); font-size: var(--step-cap); color: var(--ink-soft);
+    letter-spacing: .03em; font-weight: 500;
+  }
+  .news-badge {
+    font-family: var(--font-mono); font-size: .68rem; letter-spacing: .08em;
+    text-transform: uppercase; padding: .15rem .45rem; border-radius: 4px;
+    font-weight: 600; line-height: 1.2;
+  }
+  .news-badge.upcoming {
+    background: var(--surface-2); color: var(--flag-ink); border: 1px solid var(--flag);
+  }
+  .news-badge.published {
+    background: var(--seal-wash); color: var(--seal-ink); border: 1px solid var(--seal);
+  }
+  .news-added {
+    font-family: var(--font-mono); font-size: .74rem; color: var(--ink-soft);
+  }
+  .news-card h3 {
+    font-size: var(--step-1); font-weight: 650; margin: 0 0 .5rem; line-height: 1.3;
+    color: var(--ink);
+  }
+  .news-card p {
+    font-size: var(--step-sm); color: var(--ink-soft); margin: 0 0 .8rem; line-height: 1.55;
+    flex-grow: 1;
+  }
+  .news-card .src {
+    font-size: .8rem; font-family: var(--font-mono); color: var(--muted); margin-top: auto;
+    padding-top: .4rem;
+  }
+  .news-card .src a { color: var(--seal); text-decoration: none; font-weight: 600; }
+  .news-card .src a:hover { text-decoration: underline; }
+
+  .research-card {
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .research-card .tag { margin-bottom: .4rem; }
+  .research-card .tag.kind-theory { color: var(--seal-ink); }
+  .research-card .tag.kind-method { color: var(--flag-ink); }
+  .research-card .tag.kind-data { color: var(--time-ink); }
+  .research-card .tag.kind-benchmark { color: var(--seal-ink); }
+  .research-card h3 {
+    font-size: var(--step-1); font-weight: 650; margin: 0 0 .5rem; line-height: 1.3;
+    color: var(--ink);
+  }
+  .research-card p {
+    font-size: var(--step-sm); color: var(--ink-soft); margin: 0 0 .8rem; line-height: 1.55;
+    flex-grow: 1;
+  }
+  .research-card .src {
+    font-size: .8rem; font-family: var(--font-mono); color: var(--muted); margin-top: auto;
+    padding-top: .4rem;
+  }
+  .research-card .src a { color: var(--seal); text-decoration: none; font-weight: 600; }
+  .research-card .src a:hover { text-decoration: underline; }
+
+  .entry-points { margin-top: 1.8rem; }
+  .entry-points .cols a:hover { text-decoration: underline; }
+  .chip:hover { border-color: var(--seal); color: var(--seal); }
 </style>
 </head>
 <body>
@@ -275,6 +368,8 @@
       <a href="#map">Ecosystem</a>
       <a href="#uptake">Uptake</a>
       <a href="#governance">Governance</a>
+      <a href="#updates">Updates</a>
+      <a href="#research">Research</a>
       <a class="keep" href="https://github.com/auditable-agents">GitHub</a>
       <button id="themeBtn" type="button" aria-label="Toggle light and dark theme">◐</button>
     </nav>
@@ -314,6 +409,14 @@
         holds.</p>
         <span class="tool">auditable</span>
       </div>
+    </div>
+    <div class="hero-strip">
+      <span class="status-pill"><span class="status-dot"></span> Additions checked October 25, 2026</span>
+      <span class="hero-strip-nav">
+        <a href="#updates">Updates &darr;</a>
+        <span class="hero-strip-sep">&middot;</span>
+        <a href="#research">Research &darr;</a>
+      </span>
     </div>
   </div>
 
@@ -560,6 +663,128 @@
         will be listed here.</p>
       </div>
     </div>
+  </section>
+
+  <section id="updates">
+    <p class="eyebrow">06 / News &amp; Updates</p>
+    <h2>News &amp; Updates</h2>
+    <p class="sec-sub">Talks, coverage, and releases connected to the projects on this page, newest first. The date shown on each entry is the date of the event or publication. Upcoming entries are invitations to speak at future events. Published entries are coverage that has already appeared. Each entry also records the date it was added to this page.</p>
+
+    <div class="cards">
+      <div class="card news-card" id="2026-11-ibm-hcd-canada">
+        <div class="news-meta">
+          <div class="news-tags">
+            <span class="news-date">November 2026</span>
+            <span class="news-badge upcoming">upcoming</span>
+          </div>
+          <span class="news-added">Added 2026-10-25</span>
+        </div>
+        <h3>Invited talk: Auditing Autonomous Agents, IBM HCD Canada Lunch & Learn</h3>
+        <p>Yue Zhao will speak at an IBM HCD Canada Lunch & Learn. The talk covers the cost of defending agents, over-privilege in agent tools and skills, and the evidence an auditor needs to check what an agent did.</p>
+      </div>
+
+      <div class="card news-card" id="2026-10-29-bloomberg-cto-ds">
+        <div class="news-meta">
+          <div class="news-tags">
+            <span class="news-date">October 29, 2026</span>
+            <span class="news-badge upcoming">upcoming</span>
+          </div>
+          <span class="news-added">Added 2026-10-25</span>
+        </div>
+        <h3>Invited talk: Bloomberg CTO Data Science Speaker Series</h3>
+        <p>Yue Zhao will give an invited talk in the Bloomberg CTO Data Science Speaker Series on October 29, 2026. The talk covers agent safety, evaluation, and auditing.</p>
+      </div>
+
+      <div class="card news-card" id="2026-10-20-cfo-dive">
+        <div class="news-meta">
+          <div class="news-tags">
+            <span class="news-date">October 20, 2026</span>
+            <span class="news-badge published">published</span>
+          </div>
+          <span class="news-added">Added 2026-10-25</span>
+        </div>
+        <h3>Coverage: CFO Dive article on why AI agents go rogue</h3>
+        <p>A CFO Dive article by Alexei Alexis quotes Yue Zhao on auditing AI agents. The comments cover clear authorization boundaries, records that an agent cannot alter, and human approval for consequential actions.</p>
+        <div class="src">
+          <a href="https://www.cfodive.com/news/why-ai-agents-go-rogue-means-cfos-tech-cybersecurity/833441/">CFO Dive article &rarr;</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="research">
+    <p class="eyebrow">07 / Research, Data &amp; Benchmarks</p>
+    <h2>Research, Data &amp; Benchmarks</h2>
+    <p class="sec-sub">The research below complements the tools above. The theory sets out what an audit of an agent can establish and what records it needs. The method gives a way to represent what an agent did and what each step depended on. The data library reads agent records from many sources into one form. The benchmarks test where agents fail, whether those failures can be caught, and whether agents use more privilege than a task requires. Each project's own paper or repository describes its scope and license.</p>
+
+    <div class="cards">
+      <div class="card research-card">
+        <div class="tag kind-theory">Theory</div>
+        <h3>Auditable Claims about AI Agents</h3>
+        <p>Extends the Policy Checkability dimension of Auditable Agents from single actions to claims, by fixing the policy, scope, records, writers, and decision rule before a verdict.</p>
+        <div class="src"><a href="https://arxiv.org/abs/2610.07459">arXiv:2610.07459 &rarr;</a></div>
+      </div>
+
+      <div class="card research-card">
+        <div class="tag kind-theory">Theory</div>
+        <h3>agent-risk: Risk Assessment for Changes to AI Agents</h3>
+        <p>Studies what existing logs can establish about the risk of changing an agent, and which records, saved states, or targeted reruns a decision still needs.</p>
+        <div class="src"><a href="https://arxiv.org/abs/2610.16280">arXiv:2610.16280 &rarr;</a></div>
+      </div>
+
+      <div class="card research-card">
+        <div class="tag kind-method">Method</div>
+        <h3>GRADE</h3>
+        <p>A typed two-layer graph of agent execution and dependency, with dependency edges graded by how they are known.</p>
+        <div class="src"><a href="https://arxiv.org/abs/2606.22741">arXiv:2606.22741 &rarr;</a></div>
+      </div>
+
+      <div class="card research-card">
+        <div class="tag kind-data">Data</div>
+        <h3>agentpile</h3>
+        <p>A Python library that reads public agent trajectory datasets, trace files, and live runs into common records while keeping what each source recorded.</p>
+        <div class="src"><a href="https://github.com/yzhao062/agentpile">GitHub repository &rarr;</a></div>
+      </div>
+
+      <div class="card research-card">
+        <div class="tag kind-benchmark">Benchmark</div>
+        <h3>CatchBench</h3>
+        <p>A benchmark that asks whether an agent failure could have been caught before deployment, during a run, or after it, and reports contrasts that fail to separate instead of only a ranking.</p>
+        <div class="src"><a href="https://arxiv.org/abs/2608.22808">arXiv:2608.22808 &rarr;</a></div>
+      </div>
+
+      <div class="card research-card">
+        <div class="tag kind-benchmark">Benchmark</div>
+        <h3>FORTIS</h3>
+        <p>A benchmark for over-privilege in agent skills that checks whether a model selects the minimally sufficient skill and stays within that skill's documented tools, without running tools against live backends.</p>
+        <div class="src"><a href="https://arxiv.org/abs/2605.09163">arXiv:2605.09163 &rarr;</a></div>
+      </div>
+    </div>
+
+    <div class="entry-points">
+      <p class="eyebrow" style="margin-top: 2.6rem;">Entry points</p>
+      <div class="cols">
+        <div>
+          <h3><a href="https://auditcommons.org/">Audit Commons</a></h3>
+          <p>Field news and learning material on auditing AI agents</p>
+        </div>
+        <div>
+          <h3><a href="https://github.com/yzhao062/awesome-auditable-ai">awesome-auditable-ai</a></h3>
+          <p>Reading list of papers, tools, datasets, and standards</p>
+        </div>
+        <div>
+          <h3>Contribute to a project</h3>
+          <p>Open issues and pull requests in each project's own repository</p>
+          <div class="chips" style="margin-top: .6rem;">
+            <a class="chip" href="https://github.com/HeadyZhang/agent-audit">agent-audit</a>
+            <a class="chip" href="https://github.com/Justin0504/Aegis">Aegis</a>
+            <a class="chip" href="https://github.com/yzhao062/awesome-auditable-ai">awesome-auditable-ai</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p class="tnote" style="margin-top: 2rem;">The additions on this page were checked on October 25, 2026. Historical statistics keep the date on which they were observed.</p>
   </section>
 
 </div>
